@@ -15,7 +15,7 @@
         {
             "taskName": "test",
             "args": [
-                "Test"
+                "Tests"
             ],
             "isBuildCommand": false,
             "problemMatcher": "$msCompile"

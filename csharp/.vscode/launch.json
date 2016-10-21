@@ -6,8 +6,11 @@
             "type": "coreclr",
             "request": "launch",
             "preLaunchTask": "build",
-            "program": "${workspaceRoot}/bin/Debug/<target-framework>/<project-name.dll>",
-            "args": [],
+            "program": "${workspaceRoot}/Program/bin/Debug/netcoreapp1.0/Program.dll",
+            "args": [
+                "poultry outwits ants",
+                "4624d200580677270a54ccff86b9610e"
+            ],
             "cwd": "${workspaceRoot}",
             "externalConsole": false,
             "stopAtEntry": false,
