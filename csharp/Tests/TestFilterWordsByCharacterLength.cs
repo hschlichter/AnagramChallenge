@@ -1,15 +1,16 @@
 ﻿using System.Collections.Generic;
+using System.Collections.Immutable;
 using Xunit;
 
 namespace Tests
 {
     public class TestFilterWordsByCharacterLength
     {
-        List<string> words;
+        ImmutableList<string> words;
 
         public TestFilterWordsByCharacterLength()
         {
-            words = new List<string> { "hello", "world", "hey", "you", "this", "is", "fubar" };
+            words = ImmutableList.Create("hello", "world", "hey", "you", "this", "is", "fubar");
         }
 
         [Fact]

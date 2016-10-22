@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 
 namespace ConsoleApplication
 {
@@ -11,7 +12,7 @@ namespace ConsoleApplication
             string sentence = args[0];
             string validationHash = args[1];
             string[] lines = File.ReadAllLines(@"../wordlist");
-            var wordlist = new List<string>(lines);
+            var wordlist = ImmutableList.Create<string>(lines);
             Console.WriteLine($"Number of words in wordlist: {wordlist.Count}");
 
             // 1. Find unique characters in sentence.
@@ -23,7 +24,7 @@ namespace ConsoleApplication
             Console.WriteLine($"wordlist size after filtering on unique character: {wordlist.Count}");
 
             // 4. Filter words character lengths outside the a maximum and minimum bounds.
-            wordlist = Anagram.Helper.FilterWordsByCharacterLength(wordlist, 4, 3);
+            wordlist = Anagram.Helper.FilterWordsByCharacterLength(wordlist, 8, 4);
             Console.WriteLine($"wordlist size after filtering on length: {wordlist.Count}");
 
             // 5. Create map of per character availablility.

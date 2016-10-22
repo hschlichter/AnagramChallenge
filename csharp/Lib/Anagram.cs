@@ -22,9 +22,9 @@ namespace Anagram
             return characters;
         }
 
-        public static List<string> FilterWordsByCharacterSet(List<string> words, List<char> characters)
+        public static ImmutableList<string> FilterWordsByCharacterSet(ImmutableList<string> words, List<char> characters)
         {
-            var filteredWords = new List<string>();
+            var filteredWords = ImmutableList.CreateBuilder<string>();
             foreach (var w in words)
             {
                 var shouldAdd = true;
@@ -43,12 +43,12 @@ namespace Anagram
                 }
             }
 
-            return filteredWords;
+            return filteredWords.ToImmutable();
         }
 
-        public static List<string> FilterWordsByCharacterLength(List<string> words, int max, int min)
+        public static ImmutableList<string> FilterWordsByCharacterLength(ImmutableList<string> words, int max, int min)
         {
-            var filteredWords = new List<string>();
+            var filteredWords = ImmutableList.CreateBuilder<string>();
 
             foreach (var w in words)
             {
@@ -58,7 +58,7 @@ namespace Anagram
                 }
             }
 
-            return filteredWords;
+            return filteredWords.ToImmutable();
         }
 
         public static Dictionary<char, int> CreateCharacterMap(string sentence)
@@ -138,75 +138,56 @@ namespace Anagram
 
         public static int IterationCounter = 0;
 
-        private static void CreateSentencePermutationsNext(List<string> permutations, List<string> sentence, List<string> words, Dictionary<char, int> characterMap)
+        private static void CreateSentencePermutationsNext(List<string> permutations, ImmutableList<string> sentence, ImmutableList<string> words, Dictionary<char, int> characterMap)
         {
             IterationCounter++;
             for (var i = 0; i < words.Count; i++)
             {
                 var word = words[i];
-                var localSentence = new List<string>(sentence);
-                var localWords = new List<string>(words);
                 var localCharacterMap = new Dictionary<char, int>(characterMap);
 
                 if (UseWordIfPossible(word, localCharacterMap))
                 {
-                    localSentence.Add(word);
-                    localWords.RemoveAt(i);
+                    var newSentence = sentence.Add(word);
+                    var newWords = words.RemoveAt(i);
 
                     if (IsCharacterMapEmpty(localCharacterMap))
                     {
-                        permutations.Add(string.Join(" ", localSentence));
+                        permutations.Add(string.Join(" ", newSentence));
                     }
-                    else if (localSentence.Count >= 4)
+                    else if (newSentence.Count >= 4)
                     {
                         continue;
                     }
 
                     var localCharacterSet = GetAvailableCharacterSet(localCharacterMap);
-                    localWords = FilterWordsByCharacterSet(localWords, localCharacterSet);
+                    newWords = FilterWordsByCharacterSet(newWords, localCharacterSet);
 
-                    if (localWords.Count == 0)
+                    if (newWords.Count == 0)
                     {
                         continue;
                     }
 
                     CreateSentencePermutationsNext(
                         permutations,
-                        localSentence,
-                        localWords,
+                        newSentence,
+                        newWords,
                         localCharacterMap
                     );
                 }
             }
         }
 
-        public static List<string> CreateSentencePermutations(List<string> words, Dictionary<char, int> characterMap)
+        public static List<string> CreateSentencePermutations(ImmutableList<string> words, Dictionary<char, int> characterMap)
         {
             var permutations = new List<string>();
 
-            for (var i = 0; i < words.Count; i++)
-            {
-                var word = words[i];
-                
-                var localWords = new List<string>(words);
-                var localCharacterMap = new Dictionary<char, int>(characterMap);
-                var sentence = new List<string> { word };
-
-                if (UseWordIfPossible(word, localCharacterMap))
-                {
-                    localWords.RemoveAt(i);
-
-                    var localCharacterSet = GetAvailableCharacterSet(localCharacterMap);
-                    localWords = FilterWordsByCharacterSet(localWords, localCharacterSet);
-
-                    CreateSentencePermutationsNext(
-                        permutations,
-                        sentence,
-                        localWords,
-                        localCharacterMap
-                    );
-                }
-            }
+            CreateSentencePermutationsNext(
+                permutations,
+                ImmutableList.Create<string>(),
+                words,
+                characterMap
+            );
 
             return permutations;
         }

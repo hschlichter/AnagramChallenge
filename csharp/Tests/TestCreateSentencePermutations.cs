@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using Xunit;
 
 namespace Tests
 {
     public class TestCreateSentencePermutations
     {
-        List<string> words;
         Dictionary<char, int> characterMap;
 
         public TestCreateSentencePermutations()
@@ -29,7 +29,7 @@ namespace Tests
         [Fact]
         public void FindAllPermutations()
         {
-            this.words = new List<string> { "hello", "world", "fubar" };
+            var words = ImmutableList.Create("hello", "world", "fubar");
             var expected = new List<string> {
                 "hello world fubar",
                 "hello fubar world",
@@ -39,14 +39,14 @@ namespace Tests
                 "fubar world hello"
             };
 
-            var result = Anagram.Helper.CreateSentencePermutations(this.words, this.characterMap);
+            var result = Anagram.Helper.CreateSentencePermutations(words, this.characterMap);
             Assert.Equal(result, expected);
         }
 
         [Fact]
         public void OnlyUseAvailableCharacters()
         {
-            var words = new List<string> { "hello", "world", "fubar", "this" };
+            var words = ImmutableList.Create("hello", "world", "fubar", "this" );
             var expected = new List<string> {
                 "hello world fubar",
                 "hello fubar world",
@@ -63,7 +63,7 @@ namespace Tests
         [Fact]
         public void ThatItTerminatesWhenCharacterMapIsntEmpty()
         {
-            var words = new List<string> { "hello", "world", "fubar", "this" };
+            var words = ImmutableList.Create("hello", "world", "fubar", "this");
             this.characterMap = new Dictionary<char, int>() {
                 { 'h', 2 },
                 { 'e', 2 },
