@@ -1,12 +1,15 @@
 ﻿using System;
 using System.IO;
-using System.Collections.Generic;
 using System.Collections.Immutable;
 
 namespace ConsoleApplication
 {
     public class Program
     {
+        public const int WordMaxCharacterLength = 8;
+        public const int WordMinCharacterLength = 4;
+        public const int SentenceMaxWords = 3;
+
         public static void Main(string[] args)
         {
             string sentence = args[0];
@@ -24,14 +27,15 @@ namespace ConsoleApplication
             Console.WriteLine($"wordlist size after filtering on unique character: {wordlist.Count}");
 
             // 4. Filter words character lengths outside the a maximum and minimum bounds.
-            wordlist = Anagram.Helper.FilterWordsByCharacterLength(wordlist, 8, 4);
+            wordlist = Anagram.Helper.FilterWordsByCharacterLength(wordlist, WordMaxCharacterLength, WordMinCharacterLength);
             Console.WriteLine($"wordlist size after filtering on length: {wordlist.Count}");
 
             // 5. Create map of per character availablility.
             var characterMap = Anagram.Helper.CreateCharacterMap(sentence);
 
             // 8. Create all permutations of words.
-            var permutations = Anagram.Helper.CreateSentencePermutations(wordlist, characterMap);
+            // var permutations = Anagram.Helper.CreateSentencePermutations(wordlist, characterMap, SentenceMaxWords);
+            var permutations = Anagram.Helper.CreateSentencePermutationsParallel(wordlist, characterMap, SentenceMaxWords, 8);
             Console.WriteLine($"Permutations count: {permutations.Count}");
 
             // 9. Run hash validation on all.
@@ -39,7 +43,7 @@ namespace ConsoleApplication
             {
                 if (Anagram.Helper.SentenceHashValidation(p, validationHash))
                 {
-                    Console.WriteLine(p);
+                    Console.WriteLine($"Found match!! - {p}");
                     break;
                 }
             }

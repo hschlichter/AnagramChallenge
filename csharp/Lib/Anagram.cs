@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Security.Cryptography;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace Anagram
 {
@@ -136,11 +137,8 @@ namespace Anagram
             return characterSet;
         }
 
-        public static int IterationCounter = 0;
-
-        private static void CreateSentencePermutationsNext(List<string> permutations, ImmutableList<string> sentence, ImmutableList<string> words, Dictionary<char, int> characterMap)
+        private static void CreateSentencePermutationsNext(List<string> permutations, ImmutableList<string> sentence, ImmutableList<string> words, Dictionary<char, int> characterMap, int maxWordCount)
         {
-            IterationCounter++;
             for (var i = 0; i < words.Count; i++)
             {
                 var word = words[i];
@@ -155,7 +153,7 @@ namespace Anagram
                     {
                         permutations.Add(string.Join(" ", newSentence));
                     }
-                    else if (newSentence.Count >= 4)
+                    else if (newSentence.Count >= maxWordCount)
                     {
                         continue;
                     }
@@ -172,13 +170,14 @@ namespace Anagram
                         permutations,
                         newSentence,
                         newWords,
-                        localCharacterMap
+                        localCharacterMap,
+                        maxWordCount
                     );
                 }
             }
         }
 
-        public static List<string> CreateSentencePermutations(ImmutableList<string> words, Dictionary<char, int> characterMap)
+        public static List<string> CreateSentencePermutations(ImmutableList<string> words, Dictionary<char, int> characterMap, int maxWordCount)
         {
             var permutations = new List<string>();
 
@@ -186,10 +185,87 @@ namespace Anagram
                 permutations,
                 ImmutableList.Create<string>(),
                 words,
-                characterMap
+                characterMap,
+                maxWordCount
             );
 
             return permutations;
+        }
+
+        public static List<string> CreateSentencePermutationsParallel(ImmutableList<string> words, Dictionary<char, int> characterMap, int maxWordCount, int tasksCount)
+        {
+            Task<List<string>>[] tasks = new Task<List<string>>[tasksCount];
+
+            var wordBatches = words.FixedEvenBatch(tasksCount);
+
+            for (var i = 0; i < tasksCount; i++)
+            {
+                var batch = wordBatches[i];
+                tasks[i] = Task<List<string>>.Factory.StartNew(() => {
+                    var permutations = new List<string>();
+                    for (var j = 0; j < batch.Count; j++)
+                    {
+                        var word = batch[j];
+                        var localCharacterMap = new Dictionary<char, int>(characterMap);
+
+                        if (UseWordIfPossible(word, localCharacterMap))
+                        {
+                            var newSentence = ImmutableList.Create<string>(word);
+
+                            var wordIndex = words.FindIndex((w) => w == word);
+                            var newWords = words.RemoveAt(wordIndex);
+
+                            if (IsCharacterMapEmpty(localCharacterMap))
+                            {
+                                permutations.Add(string.Join(" ", newSentence));
+                            }
+                            else if (newSentence.Count >= maxWordCount)
+                            {
+                                continue;
+                            }
+
+                            var localCharacterSet = GetAvailableCharacterSet(localCharacterMap);
+                            newWords = FilterWordsByCharacterSet(newWords, localCharacterSet);
+
+                            if (newWords.Count == 0)
+                            {
+                                continue;
+                            }
+
+                            CreateSentencePermutationsNext(
+                                permutations,
+                                newSentence,
+                                newWords,
+                                localCharacterMap,
+                                maxWordCount
+                            );
+                        }
+                    }
+
+                    if (permutations.Count > 0)
+                    {
+                        var first = string.Join(" ", permutations[0]);
+                        var last = string.Join(" ", permutations[permutations.Count - 1]);
+                        Console.WriteLine($"Batch done - {permutations.Count} - First: {first} - Last: {last}");
+                    }
+                    else
+                    {
+                        Console.WriteLine($"Batch done - {permutations.Count}");
+                    }
+
+                    return permutations;
+                });
+            }
+
+            Task.WaitAll(tasks);
+
+            var result = new List<string>();
+            for (var i = 0; i < tasks.Length; i++)
+            {
+                result.AddRange(tasks[i].Result);
+            }
+
+            return result;
         }
 
         public static bool SentenceHashValidation(string sentence, string hash)

@@ -39,7 +39,7 @@ namespace Tests
                 "fubar world hello"
             };
 
-            var result = Anagram.Helper.CreateSentencePermutations(words, this.characterMap);
+            var result = Anagram.Helper.CreateSentencePermutations(words, this.characterMap, 4);
             Assert.Equal(result, expected);
         }
 
@@ -56,7 +56,7 @@ namespace Tests
                 "fubar world hello"
             };
 
-            var result = Anagram.Helper.CreateSentencePermutations(words, this.characterMap);
+            var result = Anagram.Helper.CreateSentencePermutations(words, this.characterMap, 4);
             Assert.Equal(result, expected);
         }
 
@@ -79,7 +79,7 @@ namespace Tests
             };
             var expected = new List<string>();
 
-            var result = Anagram.Helper.CreateSentencePermutations(words, this.characterMap);
+            var result = Anagram.Helper.CreateSentencePermutations(words, this.characterMap, 4);
             Assert.Equal(result, expected);
         }
     }
